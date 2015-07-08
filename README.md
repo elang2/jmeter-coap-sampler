@@ -31,6 +31,22 @@ Installation Instructions:
 
   
 
+Using the Sampler
+----------------------
+
+1. Open JMeter.
+2. Add a new Thread Group.
+3. Right click on the Thread Group -> Add -> Sampler -> Java Request
+4. Choose the Java Request from the navigation panel.
+5. Click on the 'classname' drop down and choose between
+
+       org.jmeter.plugin.CoapDtlsConnectionSampler
+       org.jmeter.plugin.CoapConnectionSampler
+
+
+
+
+    
 
 
 
