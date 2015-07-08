@@ -12,6 +12,14 @@ import org.eclipse.californium.core.coap.Response;
 
 public class CoapDtlsConnectionSampler extends AbstractJavaSamplerClient {
 
+    private static final String DEFAULT_METHOD = "POST";
+    private static final String DEFAULT_TIMEOUT = "10";
+    private static final String DEFAULT_TRUST_STORE_PASSWORD = "rootPass";
+    private static final String DEFAULT_KEYSTORE_PASSWORD = "endPass";
+    private static final String DEFAULT_TRUST_STORE = "c:\\certs\\trustStore.jks";
+    private static final String DEFAULT_SERVER_ENDPOINT = "coaps://localhost:5684/register";
+    private static final String DEFAULT_PAYLOAD = "Enter payload here";
+    private static final String DEFAULT_KEYSTORE_PATH = "c:\\certs\\keyStore.jks";
     private static final String SERVER_ENDPOINT = "SERVER_ENDPOINT";
     private static final String MESSAGE_PAYLOAD = "MESSAGE_PAYLOAD";
     private static final String KEYSTORE_PATH = "KEYSTORE_PATH";
@@ -33,39 +41,35 @@ public class CoapDtlsConnectionSampler extends AbstractJavaSamplerClient {
     Logger logger = getLogger();
 
     public CoapDtlsConnectionSampler() {
-        logger.error("init Server");
     }
 
     @Override
     public Arguments getDefaultParameters() {
-        logger.error("Getting default Params");
         Arguments result = new Arguments();
-        result.addArgument(SERVER_ENDPOINT, "coaps://localhost:5684/register");
-        result.addArgument(MESSAGE_PAYLOAD, "put payload string here");
-        result.addArgument(KEYSTORE_PATH, "c:\\certs\\keyStore.jks");
-        result.addArgument(TRUSTSTORE_PATH, "c:\\certs\\trustStore.jks");
-        result.addArgument(KEYSTORE_PASS, "endPass");
-        result.addArgument(TRUST_STORE_PASS, "rootPass");
-        result.addArgument(CONNECTION_TIME_OUT, "30");
-        result.addArgument(METHOD, "POST");
+        result.addArgument(SERVER_ENDPOINT, DEFAULT_SERVER_ENDPOINT);
+        result.addArgument(MESSAGE_PAYLOAD, DEFAULT_PAYLOAD);
+        result.addArgument(KEYSTORE_PATH, DEFAULT_KEYSTORE_PATH);
+        result.addArgument(TRUSTSTORE_PATH, DEFAULT_TRUST_STORE);
+        result.addArgument(KEYSTORE_PASS, DEFAULT_KEYSTORE_PASSWORD);
+        result.addArgument(TRUST_STORE_PASS, DEFAULT_TRUST_STORE_PASSWORD);
+        result.addArgument(CONNECTION_TIME_OUT, DEFAULT_TIMEOUT);
+        result.addArgument(METHOD, DEFAULT_METHOD);
         return result;
     }
 
     @Override
     public void setupTest( JavaSamplerContext context ) {
-        logger.error("Setting up test");
-        messagePayload = context.getParameter(MESSAGE_PAYLOAD, "enter json here");
-        serverEndPoint = context.getParameter(SERVER_ENDPOINT, "coaps://localhost:5684/register");
-        keyStorePath = context.getParameter(KEYSTORE_PATH, "");
-        trustStorePath = context.getParameter(TRUSTSTORE_PATH, "");
-        trustStorePass = context.getParameter(TRUST_STORE_PASS, "rootPass");
-        keyStorePass = context.getParameter(KEYSTORE_PASS, "endPass");
-        connectionTimeout = context.getParameter(CONNECTION_TIME_OUT, "10");
-        method = context.getParameter(METHOD, "POST");
+        messagePayload = context.getParameter(MESSAGE_PAYLOAD, "Enter Payload here");
+        serverEndPoint = context.getParameter(SERVER_ENDPOINT, DEFAULT_SERVER_ENDPOINT);
+        keyStorePath = context.getParameter(KEYSTORE_PATH, DEFAULT_KEYSTORE_PATH);
+        trustStorePath = context.getParameter(TRUSTSTORE_PATH, DEFAULT_TRUST_STORE);
+        trustStorePass = context.getParameter(TRUST_STORE_PASS, DEFAULT_TRUST_STORE_PASSWORD);
+        keyStorePass = context.getParameter(KEYSTORE_PASS, DEFAULT_KEYSTORE_PASSWORD);
+        connectionTimeout = context.getParameter(CONNECTION_TIME_OUT, DEFAULT_TIMEOUT);
+        method = context.getParameter(METHOD, DEFAULT_METHOD);
     }
 
     public SampleResult runTest( JavaSamplerContext context ) {
-        logger.error("Running Test Case");
         SampleResult result = new SampleResult();
         result.setSampleLabel("Sample");
         result.setSamplerData(String.format("url: %s, msg: %s", serverEndPoint, messagePayload));
@@ -85,52 +89,30 @@ public class CoapDtlsConnectionSampler extends AbstractJavaSamplerClient {
         Request request = null;
         Client.getDtlsClient(keyStorePath, keyStorePass, trustStorePath, trustStorePass, logger);
         try {
-            logger.error(method + serverEndPoint);
             request = newRequest(method, serverEndPoint);
             request.setPayload(message);
             request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
-            logger.error("before send" + request);
             request.send();
-            logger.error("After send");
             Response response = receiveResponse(request);
-
             if (!response.isTimedOut()) {
                 sampleResult.setResponseMessage(Utils.prettyPrint(response));
                 sampleResult.setSuccessful(true);
             } else {
-                sampleResult.setResponseMessage("failure");
+                sampleResult.setResponseMessage("Request Timed Out");
                 sampleResult.setSuccessful(false);
             }
         } catch (Exception e) {
-            logger.error("Exception " + e.getMessage());
-            sampleResult.setResponseMessage(e.getMessage());
+            sampleResult.setResponseMessage("Exception Occured: " + e.getMessage());
             sampleResult.setSuccessful(false);
         }
     }
 
-    public Response receiveResponse( Request request ) {
+    public Response receiveResponse( Request request ) throws Exception {
         Response response = null;
-        logger.error("Conn-> " + connectionTimeout);
         try {
             response = request.waitForResponse(1000 * Integer.parseInt(connectionTimeout));
         } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-            return response;
-        }
-        if (response != null) {
-            System.out.println(Utils.prettyPrint(response));
-            System.out.println("Time elapsed (ms): " + response.getRTT());
-            // check of response contains resources
-            if (response.getOptions().hasOption(MediaTypeRegistry.APPLICATION_LINK_FORMAT)) {
-                String linkFormat = response.getPayloadString();
-                // output discovered resources
-                System.out.println("\nDiscovered resources:");
-                System.out.println(linkFormat);
-            } else {
-
-            }
-        } else {
-            System.err.println("Request timed out");
+            throw e;
         }
         return response;
     }

@@ -1,0 +1,3 @@
+org\jmeter\plugin\Client.class
+org\jmeter\plugin\CoapConnectionSampler.class
+org\jmeter\plugin\CoapDtlsConnectionSampler.class

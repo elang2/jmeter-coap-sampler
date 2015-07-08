@@ -12,10 +12,14 @@ import org.eclipse.californium.core.coap.Response;
 
 public class CoapConnectionSampler extends AbstractJavaSamplerClient {
 
-    private static final String SERVER_ENDPOINT = "SERVER_ENDPOINT";
-    private static final String MESSAGE_PAYLOAD = "MESSAGE_PAYLOAD";
-    private static final String CONNECTION_TIME_OUT = "CONNECTION_TIME_OUT";
-    private static final String METHOD = "METHOD";
+    private final String DEFAULT_METHOD = "POST";
+    private final String DEFAULT_CONNECTION_TIMEOUT = "30";
+    private final String DEFAULT_PAYLOAD = "Enter payload here";
+    private final String DEFAULT_ENDPOINT = "coap://localhost:5684/register";
+    private final String SERVER_ENDPOINT = "SERVER_ENDPOINT";
+    private final String MESSAGE_PAYLOAD = "MESSAGE_PAYLOAD";
+    private final String CONNECTION_TIME_OUT = "CONNECTION_TIME_OUT";
+    private final String METHOD = "METHOD";
 
     private String messagePayload;
     private String serverEndPoint;
@@ -30,27 +34,23 @@ public class CoapConnectionSampler extends AbstractJavaSamplerClient {
 
     @Override
     public Arguments getDefaultParameters() {
-        logger.error("Getting default Params");
         Arguments result = new Arguments();
-        result.addArgument(SERVER_ENDPOINT, "coap://localhost:5684/register");
-        result.addArgument(MESSAGE_PAYLOAD, "enter payload here");
-        result.addArgument(CONNECTION_TIME_OUT, "30");
-        result.addArgument(METHOD, "POST");
+        result.addArgument(SERVER_ENDPOINT, DEFAULT_ENDPOINT);
+        result.addArgument(MESSAGE_PAYLOAD, DEFAULT_PAYLOAD);
+        result.addArgument(CONNECTION_TIME_OUT, DEFAULT_CONNECTION_TIMEOUT);
+        result.addArgument(METHOD, DEFAULT_METHOD);
         return result;
     }
 
-    
     @Override
     public void setupTest( JavaSamplerContext context ) {
-        logger.error("Setting up test");
-        messagePayload = context.getParameter(MESSAGE_PAYLOAD, "enter payload here");
-        serverEndPoint = context.getParameter(SERVER_ENDPOINT, "coap://localhost:5684/register");
-        connectionTimeout = context.getParameter(CONNECTION_TIME_OUT, "10");
-        method = context.getParameter(METHOD, "POST");
+        messagePayload = context.getParameter(MESSAGE_PAYLOAD, DEFAULT_ENDPOINT);
+        serverEndPoint = context.getParameter(SERVER_ENDPOINT, DEFAULT_ENDPOINT);
+        connectionTimeout = context.getParameter(CONNECTION_TIME_OUT, DEFAULT_CONNECTION_TIMEOUT);
+        method = context.getParameter(METHOD, DEFAULT_METHOD);
     }
 
     public SampleResult runTest( JavaSamplerContext context ) {
-        logger.error("Running Test Case");
         SampleResult result = new SampleResult();
         result.setSampleLabel("Sample");
         result.setSamplerData(String.format("url: %s, msg: %s", serverEndPoint, messagePayload));
@@ -66,56 +66,33 @@ public class CoapConnectionSampler extends AbstractJavaSamplerClient {
     }
 
     private void establishDtlsConnection( String message, SampleResult sampleResult ) {
-
         Request request = null;
         Client.getClient(serverEndPoint, logger);
         try {
-            logger.error(method + serverEndPoint);
             request = newRequest(method, serverEndPoint);
             request.setPayload(message);
             request.getOptions().setContentFormat(MediaTypeRegistry.APPLICATION_JSON);
-            logger.error("before send" + request);
             request.send();
-            logger.error("After send");
             Response response = receiveResponse(request);
-
             if (!response.isTimedOut()) {
                 sampleResult.setResponseMessage(Utils.prettyPrint(response));
                 sampleResult.setSuccessful(true);
             } else {
-                sampleResult.setResponseMessage("failure");
+                sampleResult.setResponseMessage("Request Timed Out");
                 sampleResult.setSuccessful(false);
             }
         } catch (Exception e) {
-            logger.error("Exception " + e.getMessage());
-            sampleResult.setResponseMessage(e.getMessage());
+            sampleResult.setResponseMessage("Exception Occured: " + e.getMessage());
             sampleResult.setSuccessful(false);
         }
     }
 
-    public Response receiveResponse( Request request ) {
+    public Response receiveResponse( Request request ) throws Exception {
         Response response = null;
-        logger.error("Conn-> " + connectionTimeout);
         try {
             response = request.waitForResponse(1000 * Integer.parseInt(connectionTimeout));
         } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-            return response;
-        }
-        if (response != null) {
-            System.out.println(Utils.prettyPrint(response));
-            System.out.println("Time elapsed (ms): " + response.getRTT());
-            // check of response contains resources
-            if (response.getOptions().hasOption(MediaTypeRegistry.APPLICATION_LINK_FORMAT)) {
-                String linkFormat = response.getPayloadString();
-                // output discovered resources
-                System.out.println("\nDiscovered resources:");
-                System.out.println(linkFormat);
-            } else {
-
-            }
-        } else {
-            System.err.println("Request timed out");
+            throw e;
         }
         return response;
     }

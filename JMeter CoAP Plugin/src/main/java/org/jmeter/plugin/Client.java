@@ -25,7 +25,6 @@ public class Client {
     private static Endpoint dtlsEndpoint = null;
 
     public static CoapClient getClient( String url, Logger logger ) {
-
         if (client != null) {
             return client;
         }
