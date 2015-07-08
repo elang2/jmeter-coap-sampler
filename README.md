@@ -30,8 +30,6 @@ Installation Instructions:
  1.  jmeter-coap-sampler-1.0.0.jar
 
 
-  
-
 Using the Sampler
 ----------------------
 
@@ -43,6 +41,10 @@ Using the Sampler
 
        org.jmeter.plugin.CoapDtlsConnectionSampler
        org.jmeter.plugin.CoapConnectionSampler
+
+
+Screenshots
+---------------------
 
 
 
