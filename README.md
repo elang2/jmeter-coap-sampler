@@ -1,10 +1,25 @@
+##Jmeter plugin for testing API Endpoints using CoAP Protocol
 
-**JMeter Plugin for CoAP protocol.**
------------------------------
+Reference : 
+https://en.wikipedia.org/wiki/Constrained_Application_Protocol
+http://coap.technology/ 
 
-This plugin can be used with Jmeter to test CoAP endpoints.
+CoAP (Constrained Application protocol) is an application layer protocol intended for use in resource constrained environments like in low power electronic devices and other electrical appliances which need to be able to send and receive instructions remotely.
+
+CoAP is a good candidate to build a IoT (Internet of Things) framework to help devices talk to remote application or servers.
+
+[Californium](http://www.eclipse.org/californium/) is a Java Library which can be used to setup API endpoints in your application which operate using the **Constrained Application Protocol**.
+
+**Jmeter-coap-Sampler** is a Jmeter plugin which can be used for Automation testing or Load testing your API endpoints implemented in **CoAP**.
 
 There are separate samplers to test DTLS endpoints and non DTLS endpoints.
+
+
+Pre-requisite
+
+1. Java 7
+2. Maven 2.x+
+3. Jmeter 2.10+
 
 
 Installation Instructions:
